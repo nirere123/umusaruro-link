@@ -1,6 +1,6 @@
 # ================================================================
 # FILE        : rental.py
-# MEMBER      : Member 4 — Rental System & Trust History
+# MEMBER      : Noella — Rental System & Trust History
 # PURPOSE     : Farmers request rentals. Owners approve/reject.
 #               Trust score updates after each completed rental.
 # ================================================================
