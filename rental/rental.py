@@ -12,9 +12,7 @@ from equipment import login_required   # Reuse Member 3's decorator
 
 rental_bp = Blueprint('rental', __name__)
 
-
-# ── REQUEST RENTAL 
-────────────────────────────────────────────────
+# REQUEST RENTAL 
 @rental_bp.route('/rent-equipment/<int:equipment_id>', methods=['GET', 'POST'])
 @login_required
 def rent_equipment(equipment_id):
@@ -43,7 +41,7 @@ def rent_equipment(equipment_id):
         end_date   = request.form['end_date']
         message    = request.form.get('message', '').strip()
 
-        # ── Calculate total cost ──────────────────────────────────
+        # Calculate total cost 
         start = datetime.strptime(start_date, '%Y-%m-%d').date()
         end   = datetime.strptime(end_date,   '%Y-%m-%d').date()
 
@@ -54,7 +52,7 @@ def rent_equipment(equipment_id):
         days       = (end - start).days
         total_cost = item['price'] * days
 
-        # ── Insert rental request ─────────────────────────────────
+        # Insert rental request 
         cursor.execute(
             "INSERT INTO rentals "
             "(farmer_id, equipment_id, start_date, end_date, message, total_cost) "
@@ -70,8 +68,7 @@ def rent_equipment(equipment_id):
     return render_template('rent_equipment.html', item=item)
 
 
-# ── MY RENTALS (farmer view) 
-──────────────────────────────────────
+# MY RENTALS (farmer view) 
 @rental_bp.route('/my-rentals')
 @login_required
 def my_rentals():
@@ -99,7 +96,7 @@ def my_rentals():
     return render_template('my_rentals.html', rentals=rentals, trust=trust)
 
 
-# ── MANAGE REQUESTS (owner view) ─────────────────────────────────
+# MANAGE REQUESTS (owner view) 
 @rental_bp.route('/manage-rentals')
 @login_required
 def manage_rentals():
@@ -122,8 +119,7 @@ def manage_rentals():
     return render_template('manage_rentals.html', requests=requests)
 
 
-# ── APPROVE / REJECT 
-──────────────────────────────────────────────
+# APPROVE / REJECT 
 @rental_bp.route('/update-rental/<int:rental_id>/<action>', methods=['POST'])
 @login_required
 def update_rental(rental_id, action):
@@ -170,8 +166,7 @@ def update_rental(rental_id, action):
     return redirect(url_for('rental.manage_rentals'))
 
 
-# ── MARK AS RETURNED 
-──────────────────────────────────────────────
+# MARK AS RETURNED 
 @rental_bp.route('/mark-returned/<int:rental_id>', methods=['POST'])
 @login_required
 def mark_returned(rental_id):
@@ -203,8 +198,7 @@ def mark_returned(rental_id):
         (rental['equipment_id'],)
     )
 
-    # ── Update Trust Score 
-────────────────────────────────────────
+    # Update Trust Score 
     # Completed rental → completed_rentals + 1
     # Score formula: (completed / total_rentals) × 5
     update_trust_score(cursor, rental['farmer_id'], completed=True)
@@ -214,8 +208,7 @@ def mark_returned(rental_id):
     return redirect(url_for('rental.manage_rentals'))
 
 
-# ── TRUST SCORE LOGIC 
-─────────────────────────────────────────────
+# TRUST SCORE LOGIC 
 def update_trust_score(cursor, farmer_id, completed=True):
     """
     Recalculates a farmer's trust score after a rental ends.
