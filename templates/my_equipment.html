@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}My Equipment{% endblock %}
+{% block content %}
+<!--
+  FILE     : templates/my_equipment.html
+  MEMBER   : Member 3 — Equipment Management
+-->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="fw-bold mb-0"><i class="bi bi-grid text-success me-2"></i>My Equipment</h3>
+  <a href="/add-equipment" class="btn btn-main"><i class="bi bi-plus me-1"></i>Add New</a>
+</div>
+{% for item in equipment %}
+<div class="card mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center">
+    <div>
+      <h6 class="fw-bold mb-1">{{ item.name }}</h6>
+      <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</span>
+      <span class="ms-3 text-success small fw-semibold">RWF {{ "{:,.0f}".format(item.price) }}/day</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-{{ 'success' if item.availability == 'available' else 'warning text-dark' }}">
+        {{ item.availability }}
+      </span>
+      <a href="/edit-equipment/{{ item.id }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+      <form method="POST" action="/delete-equipment/{{ item.id }}" class="d-inline"
+            onsubmit="return confirm('Delete this equipment?')">
+        <button class="btn btn-sm btn-outline-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="bi bi-tools" style="font-size:3rem"></i>
+  <p class="mt-3">No equipment yet. <a href="/add-equipment">Add your first one</a></p>
+</div>
+{% endfor %}
+{% endblock %}

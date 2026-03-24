@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Request Rental{% endblock %}
+{% block content %}
+<!--
+  FILE     : templates/rent_equipment.html
+  MEMBER   : Member 4 — Rental System
+-->
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h4 class="fw-bold mb-1"><i class="bi bi-calendar-plus text-success me-2"></i>Request Rental</h4>
+      <p class="text-muted mb-4">{{ item.name }} — RWF {{ "{:,.0f}".format(item.price) }}/day</p>
+      <form method="POST" action="/rent-equipment/{{ item.id }}">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Start Date</label>
+          <input type="date" name="start_date" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">End Date</label>
+          <input type="date" name="end_date" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Message to Owner <small class="text-muted">(optional)</small></label>
+          <textarea name="message" class="form-control" rows="3"
+                    placeholder="Any details the owner should know..."></textarea>
+        </div>
+        <div class="alert alert-light small">
+          <i class="bi bi-info-circle me-1"></i>
+          Total cost will be calculated automatically based on number of days.
+        </div>
+        <button type="submit" class="btn btn-main w-100 py-2 fw-semibold">
+          <i class="bi bi-send me-2"></i>Send Request
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
