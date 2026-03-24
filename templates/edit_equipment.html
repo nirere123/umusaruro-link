@@ -5,7 +5,18 @@
   <div class="col-md-6">
     <div class="card p-4">
       <h4 class="fw-bold mb-4"><i class="bi bi-pencil text-success me-2"></i>Edit Equipment</h4>
-      <form method="POST" action="/edit-equipment/{{ item.id }}">
+      <form method="POST" action="/edit-equipment/{{ item.id }}" enctype="multipart/form-data">
+        {% if item.photo %}
+        <div class="mb-3 text-center">
+          <img src="/static/{{ item.photo }}" class="img-thumbnail" style="max-height:200px; max-width:100%;">
+          <p class="small text-muted mt-2">Current photo</p>
+        </div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Update Photo (Optional)</label>
+          <input type="file" name="photo" class="form-control" accept="image/*" />
+          <small class="text-muted">Leave empty to keep current photo</small>
+        </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Name</label>
           <input type="text" name="name" class="form-control" value="{{ item.name }}" required/>

@@ -3,6 +3,13 @@
 {% block content %}
 <div class="row g-4">
   <div class="col-md-7">
+    {% if item.photo %}
+    <img src="/static/{{ item.photo }}" class="img-fluid rounded mb-3" alt="{{ item.name }}" style="max-height:400px; object-fit:cover; width:100%;">
+    {% else %}
+    <div class="bg-light d-flex align-items-center justify-content-center rounded mb-3" style="height:400px;">
+      <i class="bi bi-image text-muted" style="font-size:5rem;"></i>
+    </div>
+    {% endif %}
     <div class="card p-4">
       <h3 class="fw-bold">{{ item.name }}</h3>
       <p class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</p>

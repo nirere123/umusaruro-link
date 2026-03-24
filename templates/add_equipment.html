@@ -9,7 +9,12 @@
   <div class="col-md-6">
     <div class="card p-4">
       <h4 class="fw-bold mb-4"><i class="bi bi-plus-circle text-success me-2"></i>List New Equipment</h4>
-      <form method="POST" action="/add-equipment">
+      <form method="POST" action="/add-equipment" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Equipment Photo</label>
+          <input type="file" name="photo" class="form-control" accept="image/*" />
+          <small class="text-muted">Upload a photo (JPG, PNG, etc.)</small>
+        </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Equipment Name</label>
           <input type="text" name="name" class="form-control" required placeholder="e.g. John Deere Tractor"/>
