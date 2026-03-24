@@ -1,9 +1,4 @@
 <!DOCTYPE html>
-<!--
-  FILE     : templates/base.html
-  PURPOSE  : Master layout — every other page extends this.
-             Contains navbar, Bootstrap 5, flash messages.
--->
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -31,6 +26,9 @@
       {% if session.user_id %}
       <ul class="navbar-nav me-auto">
         <li class="nav-item"><a class="nav-link" href="/equipment"><i class="bi bi-tools me-1"></i>Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="/farmers"><i class="bi bi-people me-1"></i>Farmers</a></li>
+        <li class="nav-item"><a class="nav-link" href="/farmers/knowledge"><i class="bi bi-book me-1"></i>Knowledge</a></li>
+        <li class="nav-item"><a class="nav-link" href="/farmers/messages"><i class="bi bi-chat-left-text me-1"></i>Messages</a></li>
         {% if session.user_role == 'farmer' %}
         <li class="nav-item"><a class="nav-link" href="/my-rentals"><i class="bi bi-calendar-check me-1"></i>My Rentals</a></li>
         {% endif %}

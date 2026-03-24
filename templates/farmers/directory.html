@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Farmer Directory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Farmer Directory</h1>
+</div>
+
+<div class="row g-3">
+  {% if farmers %}
+    {% for farmer in farmers %}
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5 class="card-title">{{ farmer.name }}</h5>
+        <p class="mb-1"><strong>Location:</strong> {{ farmer.farm_location or farmer.location or 'N/A' }}</p>
+        <p class="mb-1"><strong>Phone:</strong> {{ farmer.phone or 'N/A' }}</p>
+        <p class="mb-1"><strong>Crop:</strong> {{ farmer.crop_type or 'N/A' }}</p>
+        <p class="text-muted small">{{ (farmer.bio or '')[:110] ~ ('...' if farmer.bio and farmer.bio|length > 110 else '') }}</p>
+        <a href="{{ url_for('farmers.profile', farmer_id=farmer.id) }}" class="btn btn-main btn-sm mt-2">View Profile</a>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="col-12">
+      <div class="alert alert-info">No farmers in the directory yet.</div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

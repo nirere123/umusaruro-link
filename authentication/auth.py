@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import bcrypt
-from db import get_db
+from database.db import get_db
 
 auth = Blueprint('auth', __name__)
 
@@ -13,8 +13,9 @@ def register():
         password = request.form['password']
         role     = request.form['role']
         location = request.form['location'].strip()
+        phone    = request.form.get('phone', '').strip()
 
-        if not name or not email or not password:
+        if not name or not email or not password or not phone:
             flash('All fields are required.', 'error')
             return render_template('register.html')
 
@@ -33,8 +34,8 @@ def register():
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         cursor.execute(
-            "INSERT INTO users (name, email, password, role, location) VALUES (%s, %s, %s, %s, %s)",
-            (name, email, hashed.decode('utf-8'), role, location)
+            "INSERT INTO users (name, email, password, role, location, phone) VALUES (%s, %s, %s, %s, %s, %s)",
+            (name, email, hashed.decode('utf-8'), role, location, phone)
         )
         db.commit()
         new_user_id = cursor.lastrowid
@@ -58,18 +59,18 @@ def login():
         email    = request.form['email'].strip().lower()
         password = request.form['password']
 
+        if not email or not password:
+            flash('Email and password are required.', 'error')
+            return render_template('login.html')
+
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
-        if not user:
-            flash('Email not found.', 'error')
-            return render_template('login.html')
-
-        if not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-            flash('Wrong password.', 'error')
+        if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            flash('Email or password are not correct.', 'error')
             return render_template('login.html')
 
         session['user_id']   = user['id']
