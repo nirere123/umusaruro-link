@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Inbox</h1>
+</div>
+
+<div class="card p-3 mb-3">
+  <h6>Start a conversation</h6>
+  <form method="post" action="{{ url_for('messages.start_conversation', other_user_id=0) }}" id="startConversationForm">
+    <div class="input-group">
+      <select class="form-select" id="contactSelect" required>
+        <option value="">Choose a user</option>
+        {% for contact in contacts %}
+        <option value="{{ contact.id }}">{{ contact.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-main" type="submit">Chat</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('startConversationForm');
+  const select = document.getElementById('contactSelect');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    if (!select.value) return;
+    window.location = '/messages/conversation/' + select.value;
+  });
+</script>
+
+{% if messages %}
+<div class="list-group">
+  {% for msg in messages %}
+  <div class="list-group-item">
+    <div class="d-flex justify-content-between">
+      <strong>{{ msg.sender_name }}</strong>
+      <small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+    </div>
+    <p>{{ msg.content }}</p>
+    <span class="badge {{ 'bg-success' if msg.is_read else 'bg-secondary' }}">{{ 'Read' if msg.is_read else 'Unread' }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="alert alert-info">No messages yet.</div>
+{% endif %}
+{% endblock %}
