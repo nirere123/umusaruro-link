@@ -1,106 +1,89 @@
--- ================================================================
--- FILE        : database.sql
--- MEMBER      : Benjamin
--- PURPOSE     : Create all MySQL tables for Umusaruro Link
--- HOW TO RUN  : mysql -u root -p < database.sql
--- ================================================================
+-- ========================================
+-- UMUSARURO LINK DATABASE SCHEMA
+-- ========================================
+-- This script creates all the necessary tables for the application
+-- Run this in MySQL to set up the database
 
+-- Create the database
 CREATE DATABASE IF NOT EXISTS umusaruro_link;
 USE umusaruro_link;
 
--- ── TABLE 1: users ────────────────────────────────────────────────
--- Stores every person on the platform.
--- The 'role' field controls what each person can do.
-CREATE TABLE IF NOT EXISTS users (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    name       VARCHAR(100)  NOT NULL,
-    email      VARCHAR(150)  NOT NULL UNIQUE,
-    password   VARCHAR(255)  NOT NULL,   -- stored as bcrypt hash, NEVER plain text
-    role       ENUM('farmer','equip_owner','admin') DEFAULT 'farmer',
-    location   VARCHAR(150),
-    phone      VARCHAR(20),
+-- Disable foreign key checks temporarily
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Drop existing tables if they exist (clean setup)
+DROP TABLE IF EXISTS trust_history;
+DROP TABLE IF EXISTS rentals;
+DROP TABLE IF EXISTS equipment;
+DROP TABLE IF EXISTS users;
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ────────────────────────────────────────
+-- USERS TABLE (for all users)
+-- ────────────────────────────────────────
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('farmer', 'equip_owner') NOT NULL,
+    phone VARCHAR(20),
+    location VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ── TABLE 2: equipment ────────────────────────────────────────────
--- Equipment listed by owners that farmers can rent.
-CREATE TABLE IF NOT EXISTS equipment (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    owner_id     INT           NOT NULL,
-    name         VARCHAR(150)  NOT NULL,
-    description  TEXT,
-    price        DECIMAL(10,2) NOT NULL,   -- Daily price in RWF
-    availability ENUM('available','rented') DEFAULT 'available',
-    image        VARCHAR(255),
-    location     VARCHAR(150),
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- If the owner is deleted, also delete their equipment
+-- ────────────────────────────────────────
+-- EQUIPMENT TABLE (equipment listings)
+-- ────────────────────────────────────────
+CREATE TABLE equipment (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_id INT NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    location VARCHAR(100),
+    photo VARCHAR(255),
+    availability ENUM('available', 'unavailable') DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- ── TABLE 3: rentals ──────────────────────────────────────────────
--- Records every rental request a farmer makes.
-CREATE TABLE IF NOT EXISTS rentals (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    farmer_id    INT  NOT NULL,
-    equipment_id INT  NOT NULL,
-    start_date   DATE NOT NULL,
-    end_date     DATE NOT NULL,
-    status       ENUM('pending','approved','rejected','returned') DEFAULT 'pending',
-    message      TEXT,           -- Note from farmer to owner
-    total_cost   DECIMAL(10,2),  -- Calculated: price × number of days
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (farmer_id)    REFERENCES users(id)     ON DELETE CASCADE,
+-- ────────────────────────────────────────
+-- RENTALS TABLE (rental requests)
+-- ────────────────────────────────────────
+CREATE TABLE rentals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_id INT NOT NULL,
+    equipment_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'completed', 'cancelled') DEFAULT 'pending',
+    total_cost DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (farmer_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE
 );
 
--- ── TABLE 4: trust_history ────────────────────────────────────────
--- Tracks how reliable each farmer is.
--- Score goes up when rental is completed, down when cancelled.
-CREATE TABLE IF NOT EXISTS trust_history (
-    id                INT AUTO_INCREMENT PRIMARY KEY,
-    farmer_id         INT          NOT NULL UNIQUE,
-    completed_rentals INT          DEFAULT 0,
-    cancelled_rentals INT          DEFAULT 0,
-    score             DECIMAL(4,2) DEFAULT 0.00,  -- 0.00 to 5.00
-    last_updated      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                      ON UPDATE CURRENT_TIMESTAMP,
+-- ────────────────────────────────────────
+-- TRUST HISTORY TABLE (for farmers)
+-- ────────────────────────────────────────
+CREATE TABLE trust_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_id INT UNIQUE NOT NULL,
+    completed_rentals INT DEFAULT 0,
+    score DECIMAL(3, 2) DEFAULT 0.00,
     FOREIGN KEY (farmer_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- ── SAMPLE DATA ───────────────────────────────────────────────────
--- Password for all test users is: password123
--- (bcrypt hash generated by Python)
-INSERT INTO users (name, email, password, role, location) VALUES
-('Jean Habimana',  'farmer@test.com',
- '$2b$12$eImiTXuWVxfM37uY4JANjQ==', 'farmer',     'Musanze'),
-('Marie Uwimana',  'owner@test.com',
- '$2b$12$eImiTXuWVxfM37uY4JANjQ==', 'equip_owner','Kigali'),
-('Admin',          'admin@test.com',
- '$2b$12$eImiTXuWVxfM37uY4JANjQ==', 'admin',      'Kigali');
+-- ────────────────────────────────────────
+-- CREATE INDEXES for better performance
+-- ────────────────────────────────────────
+CREATE INDEX idx_equipment_owner ON equipment(owner_id);
+CREATE INDEX idx_equipment_availability ON equipment(availability);
+CREATE INDEX idx_rentals_farmer ON rentals(farmer_id);
+CREATE INDEX idx_rentals_equipment ON rentals(equipment_id);
+CREATE INDEX idx_rentals_status ON rentals(status);
 
-INSERT INTO equipment (owner_id, name, description, price, availability, location)
-VALUES
-(2, 'John Deere Tractor',
-    '4WD tractor, good for ploughing. Covers 3 hectares per day.', 15000, 'available', 'Kigali'),
-(2, 'Irrigation Pump',
-    'Electric pump 5HP. Covers up to 2 hectares per day.',         5000,  'available', 'Musanze'),
-(2, 'Maize Harvester',
-    'Reduces harvest time by 80%. Fits rows of 60–90cm.',          20000, 'available', 'Huye');
-
-INSERT INTO trust_history (farmer_id, completed_rentals, cancelled_rentals, score)
-VALUES (1, 0, 0, 0.00);
-
--- ── KEY QUERIES used in the app ───────────────────────────────────
--- Get available equipment:
---   SELECT * FROM equipment WHERE availability = 'available';
---
--- Get all rentals for a farmer (with equipment name):
---   SELECT r.*, e.name AS equip_name, e.price
---   FROM rentals r
---   JOIN equipment e ON r.equipment_id = e.id
---   WHERE r.farmer_id = %s;
---
--- Get trust score for a farmer:
---   SELECT score, completed_rentals FROM trust_history
---   WHERE farmer_id = %s;
