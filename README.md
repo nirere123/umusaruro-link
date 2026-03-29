@@ -1,5 +1,7 @@
 # Umusaruro Link
 
+🎥 **Demo Video:** [Watch the demo](https://youtu.be/qUIRj6j1Y2k)
+
 ## Equipment Rental & Farmer Connection Platform for Rwanda
 
 Umusaruro Link is a comprehensive web platform that connects farmers in Rwanda with equipment owners, enabling easy rental of agricultural machinery and fostering community connections among farmers.
