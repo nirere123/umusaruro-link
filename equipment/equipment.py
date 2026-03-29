@@ -6,8 +6,11 @@
 # ================================================================
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from db import get_db
+from database.db import get_db
 from functools import wraps
+import os
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
 equipment_bp = Blueprint('equipment', __name__)
 
@@ -100,6 +103,23 @@ def add_equipment():
         description = request.form['description'].strip()
         price       = request.form['price']
         location    = request.form['location'].strip()
+        
+        # Handle photo upload
+        photo_filename = None
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo and photo.filename != '':
+                # Create uploads folder if it doesn't exist
+                uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'uploads')
+                os.makedirs(uploads_dir, exist_ok=True)
+                
+                # Save file with timestamp to avoid duplicates
+                filename = secure_filename(photo.filename)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+                filename = timestamp + filename
+                photo.save(os.path.join(uploads_dir, filename))
+                # Store relative path for serving
+                photo_filename = f'uploads/{filename}'
 
         if not name or not price:
             flash('Name and price are required.', 'error')
@@ -110,9 +130,9 @@ def add_equipment():
 
         # Prepared statement — %s prevents SQL injection
         cursor.execute(
-            "INSERT INTO equipment (owner_id, name, description, price, location) "
-            "VALUES (%s, %s, %s, %s, %s)",
-            (session['user_id'], name, description, float(price), location)
+            "INSERT INTO equipment (owner_id, name, description, price, location, photo) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            (session['user_id'], name, description, float(price), location, photo_filename)
         )
         db.commit()
         flash(f'"{name}" added successfully!', 'success')
@@ -144,11 +164,33 @@ def edit_equipment(equipment_id):
         description = request.form['description'].strip()
         price       = request.form['price']
         location    = request.form['location'].strip()
+        
+        # Handle photo upload if provided
+        photo_filename = item['photo']  # Keep existing photo by default
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo and photo.filename != '':
+                # Create uploads folder if it doesn't exist
+                uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'uploads')
+                os.makedirs(uploads_dir, exist_ok=True)
+                
+                # Delete old photo if it exists
+                if item['photo']:
+                    old_photo_path = os.path.join(uploads_dir, item['photo'].split('/')[-1])
+                    if os.path.exists(old_photo_path):
+                        os.remove(old_photo_path)
+                
+                # Save new file with timestamp
+                filename = secure_filename(photo.filename)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+                filename = timestamp + filename
+                photo.save(os.path.join(uploads_dir, filename))
+                photo_filename = f'uploads/{filename}'
 
         cursor.execute(
-            "UPDATE equipment SET name=%s, description=%s, price=%s, location=%s "
+            "UPDATE equipment SET name=%s, description=%s, price=%s, location=%s, photo=%s "
             "WHERE id=%s AND owner_id=%s",
-            (name, description, float(price), location, equipment_id, session['user_id'])
+            (name, description, float(price), location, photo_filename, equipment_id, session['user_id'])
         )
         db.commit()
         flash('Equipment updated!', 'success')

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Conversation{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Conversation with {{ other_user_name }} ({{ other_user_phone }})</h1>
+<div class="mb-4">
+  <div class="border rounded p-3" style="max-height:400px; overflow:auto;">
+    {% for m in conversation %}
+      <div class="mb-2 p-2 rounded {{ 'bg-light' if m.sender_id != session.user_id else 'bg-success text-white' }}">
+        <small>{{ m.sender_name }} • {{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        <p class="mb-0">{{ m.content }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('messages.send_message', receiver_id=other_user_id) }}">
+  <div class="mb-3">
+    <textarea class="form-control" name="content" rows="3" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-main">Send</button>
+</form>
+{% endblock %}
