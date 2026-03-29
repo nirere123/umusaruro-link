@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Umusaruro Link{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0"><i class="bi bi-person-circle me-2"></i>My Profile</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted">Basic Information</h6>
+            <p><strong>Name:</strong> {{ user.name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone or 'Not provided' }}</p>
+            <p><strong>Location:</strong> {{ user.location }}</p>
+            <p><strong>Role:</strong> {{ 'Equipment Owner' if user.role == 'equip_owner' else 'Farmer' }}</p>
+          </div>
+          {% if user.role == 'farmer' %}
+          <div class="col-md-6">
+            <h6 class="text-muted">Farm Information</h6>
+            <p><strong>Farm Location:</strong> {{ user.farm_location or 'Not provided' }}</p>
+            <p><strong>Crop Type:</strong> {{ user.crop_type or 'Not provided' }}</p>
+            <p><strong>Bio:</strong> {{ user.bio or 'Not provided' }}</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="mt-4">
+          <a href="{{ url_for('profile.edit') }}" class="btn btn-primary me-2">
+            <i class="bi bi-pencil me-1"></i>Edit Profile
+          </a>
+          <a href="{{ url_for('profile.change_password') }}" class="btn btn-secondary">
+            <i class="bi bi-key me-1"></i>Change Password
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
