@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <h1 class="h3 mb-3">Inbox</h1>
+
+    {% if inbox %}
+    <div class="list-group">
+      {% for m in inbox %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <h6>{{ m.sender_name }}</h6>
+          <small>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+        <p class="mb-1">{{ m.content }}</p>
+        <span class="badge {{ 'bg-success' if m.is_read else 'bg-secondary' }}">{{ 'Read' if m.is_read else 'Unread' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No messages in your inbox.</div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>Send Message</h5>
+      <form method="post" action="{{ url_for('farmers.send_message', receiver_id=0) }}" id="sendMessageForm">
+        <div class="mb-2">
+          <label class="form-label">Receiver User ID</label>
+          <input type="number" class="form-control" name="receiver_id" id="receiver_id" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Content</label>
+          <textarea class="form-control" name="content" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-main">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('sendMessageForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const receiverId = document.getElementById('receiver_id').value;
+    if (!receiverId) return;
+    this.action = '/farmers/messages/send/' + receiverId;
+    this.submit();
+  });
+</script>
+{% endblock %}

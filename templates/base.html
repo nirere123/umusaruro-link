@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Umusaruro Link{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    body        { background:#F4F7F4; font-family:'Segoe UI',sans-serif; }
+    .navbar     { background:#1B5E20 !important; }
+    .navbar-brand, .nav-link { color:#fff !important; }
+    .nav-link:hover { color:#A5D6A7 !important; }
+    .btn-main   { background:#2E7D32; color:#fff; border:none; }
+    .btn-main:hover { background:#1B5E20; color:#fff; }
+    .card       { border:none; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+    .trust-badge { background:#E8F5E9; color:#1B5E20; border-radius:20px;
+                   padding:4px 12px; font-size:.8rem; font-weight:600; }
+
+    
+    @media (max-width: 768px) {
+      .navbar-brand { font-size: 1.1rem; }
+      .card { margin-bottom: 1rem; }
+      .btn { font-size: 0.9rem; padding: 0.5rem 1rem; }
+      .table-responsive { font-size: 0.85rem; }
+    }
+
+    @media (max-width: 576px) {
+      .container { padding-left: 15px; padding-right: 15px; }
+      h3 { font-size: 1.5rem; }
+      h4 { font-size: 1.25rem; }
+      .card { border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/"><i class="bi bi-tree-fill me-2"></i>Umusaruro Link</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      {% if session.user_id %}
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/equipment"><i class="bi bi-tools me-1"></i>Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="/farmers"><i class="bi bi-people me-1"></i>Farmers</a></li>
+        <li class="nav-item"><a class="nav-link" href="/farmers/knowledge"><i class="bi bi-book me-1"></i>Knowledge</a></li>
+        <li class="nav-item"><a class="nav-link" href="/messages"><i class="bi bi-chat-left-text me-1"></i>Messages{% if unread_messages_count > 0 %} <span class="badge bg-danger">{{ unread_messages_count }}</span>{% endif %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="/notifications"><i class="bi bi-bell me-1"></i>Notifications{% if unread_notifications_count > 0 %} <span class="badge bg-warning">{{ unread_notifications_count }}</span>{% endif %}</a></li>
+        {% if session.user_role == 'farmer' %}
+        <li class="nav-item"><a class="nav-link" href="/my-rentals"><i class="bi bi-calendar-check me-1"></i>My Rentals</a></li>
+        {% endif %}
+        {% if session.user_role == 'equip_owner' %}
+        <li class="nav-item"><a class="nav-link" href="/my-equipment"><i class="bi bi-grid me-1"></i>My Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="/manage-rentals"><i class="bi bi-inbox me-1"></i>Requests</a></li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><span class="nav-link">{{ session.user_name }} <span class="badge bg-light text-dark ms-1" style="font-size:.8rem; padding:.2rem .5rem;">{{ 'Farmer' if session.user_role == 'farmer' else 'Equipment Owner' if session.user_role == 'equip_owner' else 'User' }}</span></span></li>
+        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+      </ul>
+      {% else %}
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'error' else 'info' }} alert-dismissible fade show" id="flash-{{ loop.index }}">
+    {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+<footer class="text-center text-muted py-4 mt-5" style="border-top:1px solid #ddd;font-size:.85rem;">
+  Umusaruro Link © 2025<br>
+  Rwanda | Equipment Rental & Farmer Connection
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+setTimeout(function() {
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach(function(alert) {
+    const bsAlert = new bootstrap.Alert(alert);
+    bsAlert.close();
+  });
+}, 4000);
+
+
+function updateNotificationCount() {
+  fetch('/notifications/count')
+    .then(response => response.json())
+    .then(data => {
+      const badge = document.getElementById('notification-badge');
+      if (badge) {
+        if (data.count > 0) {
+          badge.textContent = data.count;
+          badge.style.display = 'inline';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    })
+    .catch(error => console.log('Error fetching notification count:', error));
+}
+
+
+updateNotificationCount();
+setInterval(updateNotificationCount, 30000);
+</script>
+</body>
+</html>

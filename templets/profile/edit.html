@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Umusaruro Link{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0"><i class="bi bi-pencil me-2"></i>Edit Profile</h4>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-muted mb-3">Basic Information</h6>
+
+              <div class="mb-3">
+                <label for="name" class="form-label">Name *</label>
+                <input type="text" class="form-control" id="name" name="name"
+                       value="{{ user.name }}" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="location" class="form-label">Location *</label>
+                <input type="text" class="form-control" id="location" name="location"
+                       value="{{ user.location }}" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="tel" class="form-control" id="phone" name="phone"
+                       value="{{ user.phone or '' }}" placeholder="e.g. +250 123 456 789">
+              </div>
+            </div>
+
+            {% if user.role == 'farmer' %}
+            <div class="col-md-6">
+              <h6 class="text-muted mb-3">Farm Information</h6>
+
+              <div class="mb-3">
+                <label for="farm_location" class="form-label">Farm Location</label>
+                <input type="text" class="form-control" id="farm_location" name="farm_location"
+                       value="{{ user.farm_location or '' }}" placeholder="e.g. Kigali, Rwanda">
+              </div>
+
+              <div class="mb-3">
+                <label for="crop_type" class="form-label">Crop Type</label>
+                <input type="text" class="form-control" id="crop_type" name="crop_type"
+                       value="{{ user.crop_type or '' }}" placeholder="e.g. Maize, Beans, Coffee">
+              </div>
+
+              <div class="mb-3">
+                <label for="bio" class="form-label">Bio</label>
+                <textarea class="form-control" id="bio" name="bio" rows="3"
+                          placeholder="Tell us about your farming experience...">{{ user.bio or '' }}</textarea>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-circle me-1"></i>Save Changes
+            </button>
+            <a href="{{ url_for('profile.view') }}" class="btn btn-secondary">
+              <i class="bi bi-x-circle me-1"></i>Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
